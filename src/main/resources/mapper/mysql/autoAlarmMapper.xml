@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 自定义命名空间 （公司相关com.swz,个人相关org.charsp,） -->
+<mapper namespace="com.swz.weixinapp">
+	<!-- 设置缓冲区代码 -->
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache" readOnly="true" 
+		/> -->
+	<cache readOnly="true" />
+	<resultMap id="BaseResultMap" type="Info_user">
+	</resultMap>
+	<!-- 独立的sql语句 -->
+	<sql id="Base_Where_Clause">
+		<where>
+			<trim prefixOverrides="and">
+				<if test="id != null">and iduserinfo = #{id}</if>
+				<if test="username != null">and username = #{username}</if>
+				<if test="password != null">and password = #{password}</if>
+
+				<!-- 模糊查询 -->
+				<if test="dicNameLike != null">and dic_name like CONCAT("%",#{dicNameLike},"%")</if>
+				<if test="dicGroupLike != null">and dic_group like CONCAT("%",#{dicGroupLike},"%")</if>
+			</trim>
+		</where>
+		<if test="sorting != null">order by ${sorting}</if>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</sql>
+
+	<!-- ********************************用户信息******************************** -->
+	<select id="queryinfo_user" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select
+		*
+		from Info_user
+		where user_id = #{id}
+	</select>
+	<select id="queryid" resultType="java.lang.Integer"
+		parameterType="Info_user" useCache="false">
+		select
+		user_id
+		from Info_user
+		where
+		isdelete != 1 and user_name
+		= #{user_name} and password = #{password}
+	</select>
+
+	<!-- ********************************问题设置和问卷表******************************** -->
+	<select id="select_questionpaper" resultType="Std_questionpaper">
+		select * from
+		std_questionpaper
+	</select>
+	<!-- insert 插入一个回放报表，返回一个id值(也许是改变其的id值而已) -->
+	<insert id="insert_questionpaper" parameterType="Std_questionpaper"
+		useGeneratedKeys="true" keyProperty="paper_id">
+		insert into
+		Std_questionpaper
+		(paper_name,create_user,isdefault,isdelete,remark)
+		values
+		(#{paper_name},#{create_user},#{isdefault},0,#{remark})
+	</insert>
+	<update id="update_paper" parameterType="Std_questionpaper">
+		update Std_questionpaper
+		set
+		paper_name=#{paper_name},remark=#{remark},create_user=#{create_user}
+		where
+		paper_id = #{paper_id}
+	</update>
+	<update id="update_paper_cleardefault">
+		update Std_questionpaper
+		set
+		isdefault = 0 where
+		isdefault=1
+	</update>
+	<update id="update_paper_default" parameterType="java.lang.Integer">
+		update
+		Std_questionpaper
+		set
+		isdefault = 1 where paper_id = #{id}
+	</update>
+	<select id="select_question_paperid" resultType="Std_question"
+		parameterType="java.lang.Integer">
+		select * from
+		std_question where
+		std_question.isdelete = 0
+		and
+		std_question.question_id in(
+		select
+		tr_question_paper.question_id
+		from
+		tr_question_paper
+		where
+		tr_question_paper.paper_id=#{id}
+		)
+		order
+		by
+		std_question.updatetime
+	</select>
+
+	<insert id="insert_question" parameterType="Std_question"
+		useGeneratedKeys="true" keyProperty="question_id">
+		insert into
+		Std_question
+		(question,question_type,sound_id,create_user,isdelete,updatetime,remark)
+		values
+		(#{question},#{question_type},#{sound_id},#{create_user},#{isdelete},#{updatetime},#{remark})
+	</insert>
+	<select id="select_question" resultType="Std_question">
+		select * from
+		Std_question
+	</select>
+	<insert id="insert_questionrelation" parameterType="Tr_question_paper"
+		useGeneratedKeys="true" keyProperty="question_paper_id">
+		insert into
+		Tr_question_paper
+		(question_id,paper_id) values (#{question_id},#{paper_id})
+	</insert>
+	<select id="select_paper_default" resultType="VisitInfo"
+		parameterType="java.lang.Integer">
+		SELECT question,question_type,sound_path,sound_name
+		FROM
+		info_sound,std_question where info_sound.sound_id =
+		std_question.sound_id and std_question.question_id in (select
+		question_id from tr_question_paper where paper_id =#{id}) order by
+		question_id
+	</select>
+	<!-- ********************************语音表******************************** -->
+	<insert id="insert_sound" parameterType="Info_sound"
+		useGeneratedKeys="true" keyProperty="sound_id">
+		<!-- 插入前判断重复，更新而已(上层做的应该) -->
+		insert into Info_sound
+		(sound_path,sound_name,remark)
+		values(#{sound_path},#{sound_name},#{remark})
+	</insert>
+
+	<select id="select_sound" resultType="Info_sound">
+		select * from
+		Info_sound
+	</select>
+	<select id="select_sound_id" resultType="Info_sound"
+		parameterType="java.lang.Integer">
+		select * from
+		Info_sound where sound_id = #{id}
+	</select>
+	<delete id="delete_sound" parameterType="java.lang.Long">
+		delete from delete_sound
+		where id = #{id}
+	</delete>
+
+	<!-- ********************************日志******************************** -->
+	<insert id="insert_Log_alarm" parameterType="Log_alarm"
+		useGeneratedKeys="true" keyProperty="alarmlog_id">
+		insert into Log_alarm
+		(alarmlog_date,alarm_message,alarm_type,tel_event)
+		values
+		(#{alarmlog_date},#{alarm_message},#{alarm_type},#{tel_event})
+	</insert>
+	<select id="select_Log_alarm" resultType="Log_alarm">
+		select * from Log_alarm
+	</select>
+
+	<insert id="insert_visit">
+		insert into Log_visit
+		(visitlog_date,visit_message,question_id,DTMF,tel_event)
+		values
+		(#{visitlog_date},#{visit_message},#{question_id},#{DTMF},#{tel_event})
+	</insert>
+	<select id="select_visit" resultType="Log_visit">
+		select * from Log_visit
+	</select>
+
+	<!-- ********************************黑名单******************************** -->
+	<select id="select_blacklist" resultType="Info_blacklist">
+		select * from
+		Info_blacklist
+	</select>
+
+	<insert id="insert_blacklist" parameterType="Info_blacklist"
+		useGeneratedKeys="true" keyProperty="bl_id">
+		insert into Info_blacklist
+		(bl_content,bl_type,isDelete) values
+		(${bl_content},${bl_type},${isDelete});
+	</insert>
+	<!-- 注意： 使用#{}直接获取变量 使用${}字符串替换 -->
+</mapper>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 官方网站 http://mybatis.github.io/mybatis-3/zh/configuration.html -->
+	<!-- 设置 -->
+	<settings>
+		<setting name="cacheEnabled" value="true" />
+		<setting name="lazyLoadingEnabled" value="true" />
+		<setting name="multipleResultSetsEnabled" value="true" />
+		<setting name="useColumnLabel" value="true" />
+		<setting name="defaultExecutorType" value="REUSE" />
+		<setting name="defaultStatementTimeout" value="25000" />
+	</settings>
+	<!-- 数据库实体类映射 别名 -->
+	<typeAliases>
+		<!-- 分页实体类 -->
+		<typeAlias alias="PageInfo" type="com.swz.voice.model.PageInfo" />
+		<typeAlias alias="userinformation" type="com.swz.data.vo.mysql.Userinfo" />
+		<!-- 基础用户信息 -->
+		<typeAlias alias="Info_user" type="com.swz.data.vo.mysql.Info_user" />
+		<!-- 黑名单 -->
+		<typeAlias alias="Info_blacklist" type="com.swz.data.vo.mysql.Info_blacklist" />
+		<!-- 语音信息表 -->
+		<typeAlias alias="Info_sound" type="com.swz.data.vo.mysql.Info_sound" />
+		<!-- 问卷调查表 (添加所有的问卷) -->
+		<typeAlias alias="Std_questionpaper" type="com.swz.data.vo.mysql.Std_questionpaper" />
+		<!-- 问卷表关系 (问题与问卷表的关系) -->
+		<typeAlias alias="Tr_question_paper" type="com.swz.data.vo.mysql.Tr_question_paper" />
+		<!-- 问题表(所有添加的问题汇总) -->
+		<typeAlias alias="Std_question" type="com.swz.data.vo.mysql.Std_question" />
+		<!-- 语音信息表 -->
+		<typeAlias alias="Info_sound" type="com.swz.data.vo.mysql.Info_sound" />
+		<!-- 报警信息统计与分析 -->
+		<typeAlias alias="Vt_alarm" type="com.swz.data.vo.mysql.Vt_alarm" />
+		<!-- 两份系统日志信息 -->
+		<typeAlias alias="Log_alarm" type="com.swz.data.vo.mysql.Log_alarm" />
+		<typeAlias alias="Log_visit" type="com.swz.data.vo.mysql.Log_visit" />
+		<!-- 表查询语音操作模块 -->
+		<typeAlias alias="VisitInfo" type="com.swz.voice.model.VisitInfo" />
+	</typeAliases>
+</configuration>
+<!-- 记得要配置数据操作映射 官网 http://mybatis.github.io/mybatis-3/zh/sqlmap-xml.html -->

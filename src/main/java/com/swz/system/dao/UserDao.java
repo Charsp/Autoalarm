@@ -1,0 +1,13 @@
+package com.swz.system.dao;
+
+import org.springframework.stereotype.Repository;
+
+import com.swz.data.vo.mysql.Userinfo;
+
+@Repository
+public class UserDao extends BaseDao implements UserDaoInf {
+	@Override
+	public Userinfo find(Integer id) {
+		return sessionTemplate.selectOne(MYBATIS_NAMESPACE + ".testselect", id);
+	}
+}

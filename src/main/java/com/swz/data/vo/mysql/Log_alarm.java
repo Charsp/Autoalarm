@@ -1,0 +1,47 @@
+package com.swz.data.vo.mysql;
+
+import java.util.Date;
+
+public class Log_alarm{
+	private Integer alarmlog_id;
+	private Date alarmlog_date;
+	private String alarm_message;
+	private String alarm_type;
+	private String tel_event;
+
+	public void setAlarmlog_id(Integer alarmlog_id){
+		this.alarmlog_id = alarmlog_id;
+	}
+	public Integer getAlarmlog_id(){
+		return alarmlog_id;
+	}
+	public void setAlarmlog_date(Date alarmlog_date){
+		this.alarmlog_date = alarmlog_date;
+	}
+	public Date getAlarmlog_date(){
+		return alarmlog_date;
+	}
+	public void setAlarm_message(String alarm_message){
+		this.alarm_message = alarm_message;
+	}
+	public String getAlarm_message(){
+		return alarm_message;
+	}
+	public void setAlarm_type(String alarm_type){
+		this.alarm_type = alarm_type;
+	}
+	public String getAlarm_type(){
+		return alarm_type;
+	}
+	public void setTel_event(String tel_event){
+		this.tel_event = tel_event;
+	}
+	public String getTel_event(){
+		return tel_event;
+	}
+
+	@Override	
+	public String toString() {	
+		return "{"+"\"alarmlog_id\":\""+this.alarmlog_id+"\""+",\"alarmlog_date\":\""+this.alarmlog_date+"\""+",\"alarm_message\":\""+this.alarm_message+"\""+",\"alarm_type\":\""+this.alarm_type+"\""+",\"tel_event\":\""+this.tel_event+"\""+"}";	}
+}
+
