@@ -1,0 +1,46 @@
+package com.swz.voice.daoinf;
+
+import com.swz.data.vo.mysql.Info_user;
+
+/**
+ * 用户信息操作类
+ * 
+ * @author Charsp
+ *
+ * @date 2015年1月21日
+ */
+public interface UserDaoInf {
+	/**
+	 * 获取用户信息，通过用户id
+	 * 
+	 * @param id
+	 *            用户id
+	 * @return 返回用户实体
+	 */
+	public Info_user findById(Long id);
+
+	/**
+	 * 通过用户信息获取用户id号
+	 * 
+	 * @param user
+	 *            用户信息（用户名称与密码）
+	 * @return 错误返回null
+	 */
+	public Integer findByUser(Info_user user);
+
+	/**
+	 * 增加用户
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public Integer addUser(Info_user user);
+
+	/**
+	 * 更新用户密码
+	 * 
+	 * @param newPwd
+	 * @return
+	 */
+	public Integer updateUser(Info_user user);
+}

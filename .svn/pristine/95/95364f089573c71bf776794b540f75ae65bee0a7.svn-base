@@ -1,0 +1,322 @@
+package com.swz.voice.manager;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import com.swz.voice.model.VisitInfo;
+import com.swz.voice.model.VisitPhase;
+
+public class ConfigDatas {
+	/**
+	 * 基本项配置
+	 */
+	// 获取数据网址
+	private static String GetPath = "http://10.0.111.4/servlet/get_alarm_ex";
+	// 发送数据网址
+	private static String PutPath = "http://10.0.111.4/servlet/handle_alarm_ex";
+	private static String LocalHost = "http://localhost/Autoalarm/";
+	// 微信接口-用户信息
+	private static String MYINFAddress = "http://163.177.98.244/MMI/CORE";
+	// 监控总人数
+	private static Integer PeopleSum = 4;
+	// 平均每人分配时间(秒)
+	private static Integer PerSecond = 30;
+	// ShConfig.ini和ShIndex.ini两个ini文件目录の位置
+	private static String SHConfig = "C:\\ShCti\\";
+	// autoalarm_1_64kbps_Mono.wav 和autoalarm_2_64kbps_Mono.wav
+	// 等录音文件位置
+	private static String MediaPath = "F:\\sysCode\\weixin\\DLL_SO\\";
+	private static String uploadDir = "";
+	private static String alarmSound = "";
+	private static String confirmSound = "";
+	private static String endGreeting = "";
+	private static List<String> AlarmStyle = new ArrayList<String>();
+	/**
+	 * 客户回访语音列表
+	 */
+	private static List<VisitInfo> visitInfos;
+	/**
+	 * 电话拨打时间限制(默认120秒，两分钟)
+	 */
+	private static Integer timeOut = 60;
+	private static Integer perTeletimeOut = 120;
+	private static boolean debug = false;
+
+	/**
+	 * 回访客户时间区间
+	 */
+	private static List<VisitPhase> visitPhases = new ArrayList<VisitPhase>();
+	// 初始化参数
+	static {
+		resetConfigData();
+		// 从数据库中读取语音信息
+	}
+
+	public static List<VisitInfo> getVisitInfos() {
+		return visitInfos;
+	}
+
+	public static void setVisitInfos(List<VisitInfo> visitInfos) {
+		if (visitInfos != null) {
+			ConfigDatas.visitInfos = visitInfos;
+		}
+	}
+
+	public static void resetConfigData() {
+		Properties properties = new Properties();
+		InputStream inputStream = ConfigDatas.class
+				.getResourceAsStream("/config/SHT_Config.properties");
+		try {
+			properties.load(inputStream);
+			inputStream.close();
+			AlarmStyle.clear();
+			/**
+			 * 基本项配置
+			 */
+			if (properties.containsKey("GetPath")) {
+				GetPath = properties.getProperty("GetPath").trim();
+			}
+			if (properties.containsKey("PutPath")) {
+				PutPath = properties.getProperty("PutPath").trim();
+			}
+			if (properties.containsKey("MYINFSite")) {
+				MYINFAddress = properties.getProperty("MYINFSite").trim();
+			}
+
+			if (properties.containsKey("PeopleSum")) {
+				try {
+					PeopleSum = Integer.parseInt(properties.getProperty(
+							"PeopleSum").trim());
+				} catch (Exception exception) {
+					// 参数不是数字
+					exception.printStackTrace();
+				}
+			}
+			if (properties.containsKey("PerSecond")) {
+				try {
+					PerSecond = Integer.parseInt(properties.getProperty(
+							"PerSecond").trim());
+				} catch (Exception exception) {
+					// 参数不是数字
+					exception.printStackTrace();
+				}
+			}
+			if (properties.containsKey("SHConfig")) {
+				SHConfig = properties.getProperty("SHConfig").trim();
+			}
+			if (properties.containsKey("MediaPath")) {
+				MediaPath = new String(properties.getProperty("MediaPath")
+						.getBytes("ISO-8859-1"), "UTF-8").trim();
+			}
+			if (properties.containsKey("UploadDir")) {
+				uploadDir = properties.getProperty("UploadDir").trim();
+			}
+			if (properties.containsKey("PerTeleTimeOut")) {
+				perTeletimeOut = Integer.parseInt(properties.getProperty(
+						"PerTeleTimeOut").trim());
+			}
+			if (properties.containsKey("Timeout")) {
+				timeOut = Integer.parseInt(properties.getProperty("Timeout")
+						.trim());
+			}
+			if (properties.containsKey("Debug")
+					&& properties.getProperty("Debug").trim()
+							.equalsIgnoreCase("true")) {
+				debug = true;
+			}
+			if (properties.containsKey("AlarmSound")) {
+				new String(properties.getProperty("AlarmSound").getBytes(
+						"ISO-8859-1"), "UTF-8").trim();
+				alarmSound = new String(properties.getProperty("AlarmSound")
+						.getBytes("ISO-8859-1"), "UTF-8").trim();
+				;
+			}
+			if (properties.containsKey("ConfirmSound")) {
+				confirmSound = new String(properties
+						.getProperty("ConfirmSound").getBytes("ISO-8859-1"),
+						"UTF-8").trim();
+			}
+
+			if (properties.containsKey("EndGreeting")) {
+				endGreeting = new String(properties.getProperty("EndGreeting")
+						.getBytes("ISO-8859-1"), "UTF-8").trim();
+			}
+			if (properties.containsKey("LocalHost")) {
+				LocalHost = properties.getProperty("LocalHost").trim();
+			}
+
+			if (properties.containsKey("AlarmStyle")) {
+				String[] temp = properties.getProperty("AlarmStyle").trim()
+						.split(",");
+				for (int i = 0; i < temp.length; i++) {
+					AlarmStyle.add(new String(temp[i].getBytes("ISO-8859-1"),
+							"UTF-8"));
+				}
+			}
+		} catch (Exception e) {
+			// 获取配置文件出错
+			e.printStackTrace();
+		}
+	}
+
+	public static String getGetPath() {
+		return GetPath;
+	}
+
+	public static String getPutPath() {
+		return PutPath;
+	}
+
+	public static Integer getPeopleSum() {
+		return PeopleSum;
+	}
+
+	public static Integer getPerSecond() {
+		return PerSecond;
+	}
+
+	public static String getSHConfig() {
+		return SHConfig;
+	}
+
+	public static String getMediaPath() {
+		return MediaPath;
+	}
+
+	public static Integer getTimeOut() {
+		return timeOut;
+	}
+
+	public static String getMYINFAddress() {
+		return MYINFAddress;
+	}
+
+	public static boolean isDebug() {
+		return debug;
+	}
+
+	public static void setGetPath(String getPath) {
+		if (getPath != null) {
+			GetPath = getPath;
+		}
+	}
+
+	public static void setPutPath(String putPath) {
+		if (putPath != null) {
+			PutPath = putPath;
+		}
+	}
+
+	public static void setMYINFAddress(String mYINFAddress) {
+		if (mYINFAddress != null) {
+			MYINFAddress = mYINFAddress;
+		}
+	}
+
+	public static void setPeopleSum(Integer peopleSum) {
+		if (peopleSum != null) {
+			PeopleSum = peopleSum;
+		}
+	}
+
+	public static void setPerSecond(Integer perSecond) {
+		if (perSecond != null) {
+			PerSecond = perSecond;
+		}
+	}
+
+	public static void setMediaPath(String mediaPath) {
+		if (mediaPath != null) {
+			MediaPath = mediaPath;
+		}
+	}
+
+	public static String getAlarmSound() {
+		return alarmSound;
+	}
+
+	public static String getUploadDir() {
+		return uploadDir;
+	}
+
+	public static void setUploadDir(String uploadDir) {
+		ConfigDatas.uploadDir = uploadDir;
+	}
+
+	public static void setAlarmSound(String alarmSound) {
+		if (alarmSound != null) {
+			ConfigDatas.alarmSound = alarmSound;
+		}
+	}
+
+	public static String getConfirmSound() {
+		return confirmSound;
+	}
+
+	public static void setConfirmSound(String confirmSound) {
+		if (confirmSound != null) {
+			ConfigDatas.confirmSound = confirmSound;
+		}
+	}
+
+	public static List<String> getAlarmStyle() {
+		return AlarmStyle;
+	}
+
+	public static void setAlarmStyle(List<String> alarmStyle) {
+		if (alarmStyle != null) {
+			AlarmStyle.clear();
+			AlarmStyle = alarmStyle;
+		}
+	}
+
+	public static Integer getPerTeletimeOut() {
+		return perTeletimeOut;
+	}
+
+	public static void setPerTeletimeOut(Integer perTeletimeOut) {
+		ConfigDatas.perTeletimeOut = perTeletimeOut;
+	}
+
+	public static List<VisitPhase> getVisitPhases() {
+		return visitPhases;
+	}
+
+	public static void setVisitPhases(List<VisitPhase> visitPhases) {
+		ConfigDatas.visitPhases = visitPhases;
+	}
+
+	public static String getEndGreeting() {
+		return endGreeting;
+	}
+
+	public static void setEndGreeting(String endGreeting) {
+		ConfigDatas.endGreeting = endGreeting;
+	}
+
+	public static String getLocalHost() {
+		return LocalHost;
+	}
+
+	public static void setLocalHost(String localHost) {
+		LocalHost = localHost;
+	}
+
+	public static void main(String[] adStrings) {
+		System.out.println("1" + getAlarmSound());
+		System.out.println("2" + getConfirmSound());
+		System.out.println("3" + getGetPath());
+		System.out.println("4" + getMediaPath());
+		System.out.println("5" + getMYINFAddress());
+		System.out.println("6" + getPutPath());
+		System.out.println("7" + getSHConfig());
+		System.out.println("8" + getAlarmStyle());
+		System.out.println("9" + getPeopleSum());
+		System.out.println("10" + getPerSecond());
+		System.out.println("11" + getTimeOut());
+		System.out.println("12" + getVisitInfos());
+		System.out.println("13" + getVisitPhases());
+	}
+}

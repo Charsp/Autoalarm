@@ -1,0 +1,136 @@
+package com.swz.system.config.web.controller;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.swz.voice.manager.ConfigDatas;
+
+/**
+ * 基础操作类
+ * 
+ * @author Charsp
+ *
+ * @date 2015年1月20日
+ */
+public abstract class BaseController {
+	/**
+	 * 用户权限
+	 * 
+	 * @return 0 最低权限 大于0 存在可用权限(10级左右，可以配置) 小于0 用户错误(-1 数据库操作错误 -2 过期用户 -3
+	 *         被管理员禁止 ...)
+	 */
+	public int getUserPower(Integer userID) {
+		// 从数据库中获取UserId的数据权限，没有数据返回-1
+		if (ConfigDatas.isDebug()) {
+			return 10;
+		}
+		int power = -1;
+		if (userID != null) {
+
+		}
+		return power;
+	}
+
+	/**
+	 * 空判断
+	 * 
+	 * @param object
+	 * @return 空则 True 不空则 False
+	 */
+	public boolean AssertEqualNull(Object object) {
+		if (object != null && !object.equals("null") && !object.equals("")
+				|| ConfigDatas.isDebug()) {
+			return false;
+		}
+		return true;
+	}
+
+	public Map<String, Object> returnErrorCode(int errCode) {
+		Map<String, Object> map = new HashMap<String, Object>();
+
+		if (ConfigDatas.isDebug()) {
+			map.put("debug", 1001);
+			map.put("debugmsg", "程序测试，权限基本全开！");
+		}
+
+		map.put("errcode", errCode);
+		switch (errCode) {
+		case 0:
+			map.put("msg", "Success!");
+			break;
+		// 用户操作信息
+		case 2001:
+			map.put("msg", "未识别的用户");
+			break;
+		case 2002:
+			map.put("msg", "重复登录");
+			break;
+		case 2003:
+			map.put("msg", "参数设置无效");
+			break;
+		case 2007:
+			map.put("msg", "文件保存失败");
+			break;
+		case 2008:
+			map.put("msg", "文件上传失败");
+			break;
+		case 2009:
+			map.put("msg", "权限不足！");
+			break;
+		// 数据库操作信息
+		case 3001:
+			map.put("msg", "数据库错误！");
+			break;
+		case 3002:
+			map.put("msg", "数据增加失败！");
+			break;
+		case 3003:
+			map.put("msg", "数据删除失败！");
+			break;
+		case 3004:
+			map.put("msg", "数据修改失败！");
+			break;
+		case 3005:
+			map.put("msg", "数据查询失败！");
+		case 3006:
+			map.put("msg", "数据为空！");
+			break;
+		// 设备控制信息
+		case 4001:
+			map.put("msg", "设备不存在，请检查线路是否连接正常！");
+			break;
+		case 4002:
+			map.put("msg", "设备打开失败！请联系服务器管理员查看日志");
+			break;
+		case 4003:
+			map.put("msg", "设备关闭失败,设备还没有打开,请先打开设备");
+			break;
+		case 4004:
+			map.put("msg", "设备已经打开，不能重复启动，需要要重启请先关闭设备");
+			break;
+		case 4005:
+			map.put("msg", "基础配置文件出错，缺失语音文件在SHT_Config.properties中配置");
+			break;
+		// 服务器忙
+		case 5001:
+			map.put("msg", "服务器忙，请稍后重试");
+			break;
+		case 5002:
+			map.put("msg", "程序还没有执行完上次的电话，请耐心等待");
+			break;
+		case 5003:
+			map.put("msg", "电话列表为空，请先上传电话列表");
+			break;
+		case 5004:
+			map.put("msg", " 获取默认信息失败请先设置默认一个问卷");
+			break;
+		case 5005:
+			map.put("msg", " 获取默认信息失败,默认的问卷中没有可用问题");
+			break;
+		default:
+			map.put("msg", "无效的请求");
+			break;
+		}
+		return map;
+	}
+}

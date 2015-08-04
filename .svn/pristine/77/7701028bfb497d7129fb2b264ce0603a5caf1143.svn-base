@@ -1,0 +1,189 @@
+package com.swz.voice.impl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.swz.voice.idal.BoardControler;
+import com.swz.voice.manager.ConfigDatas;
+import com.swz.voice.model.EVENT_SET_INFO;
+import com.swz.voice.model.PaperResult;
+import com.swz.voice.model.SHP_A3;
+import com.swz.voice.service.TransactionStream;
+
+/**
+ * 板卡控制程序
+ * 
+ * @author Charsp
+ *
+ * @date 2015年1月9日
+ */
+public class BoardControlerImpl implements BoardControler {
+	private static Logger log = LoggerFactory
+			.getLogger(BoardControlerImpl.class);
+	private static final SHP_A3 MYAPI = SHP_A3.INSTANCE;
+	private static EVENT_SET_INFO EventSet = new EVENT_SET_INFO();
+	/**
+	 * 业务处理线程（每个硬件端口一个监听线程）
+	 */
+	private static List<SHT_PortTread> sht_PortTread = new ArrayList<SHT_PortTread>();
+
+	/**
+	 * 主自动接警线程
+	 */
+	private static TransactionStream monitor = null;
+
+	@Override
+	public Map<String, Object> boardUsedInfo() {
+		Map<String, Object> result = new HashMap<>();
+		// 最大端口数SsmGetMaxCh
+		result.put("MaxCh", MYAPI.SsmGetMaxCh());
+		// 最大配置板卡数SsmGetMaxCfgBoard
+		result.put("MaxCfgBoard", MYAPI.SsmGetMaxCfgBoard());
+		// 最大PcmSsmGetMaxPcm
+		result.put("MaxPcm", MYAPI.SsmGetMaxPcm());
+		// 最大可用板卡SsmGetMaxUsableBoard
+		result.put("MaxUsableBoard", MYAPI.SsmGetMaxUsableBoard());
+		Map<String, String> line = new HashMap<>();
+		for (int i = 0; i < MYAPI.SsmGetMaxCh(); i++) {
+			if (MYAPI.SsmGetLineVoltage(i) < 30) {
+				line.put("Port" + i, "线路未连接");
+			} else {
+				// 检查通道空闲程度
+				Integer chState = MYAPI.SsmGetChState(i);
+				if (chState == 0) {
+					line.put("Port" + i, "线路空闲");
+				} else {
+					line.put("Port" + i, "线路被动使用++编码：" + chState);
+				}
+			}
+		}
+		// 端口线路信息
+		result.put("ChLine", line);
+		return result;
+	}
+
+	@Override
+	public String closeBoard() {
+		try {
+			MYAPI.SsmCloseCti();
+		} catch (Exception e) {
+			log.info("板卡关闭异常！" + e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public boolean restartBoard() {
+		closeBoard();
+		// 清除缓冲区
+		monitor.clearAlarm();
+		// 延时三秒钟
+		SHT_PortTread.sleep(3000);
+		log.info(".............重新加载板卡.............");
+		initdBoard();
+		return false;
+	}
+
+	public void sendVisitInfo(PaperResult paperResult) {
+		if (monitor != null) {
+			monitor.sendVisitInfo(paperResult);
+		}
+	}
+
+	public void sendUserPress(int currPort, boolean value) {
+		if (monitor != null) {
+			monitor.sendUserPress(currPort, value);
+		}
+	}
+
+	@Override
+	public int initdBoard() {
+		log.info("初始化SynCTI驱动程序和板卡,请等待...");
+		int result = MYAPI
+				.SsmStartCti(ConfigDatas.getSHConfig() + "\\ShConfig.ini",
+						ConfigDatas.getSHConfig() + "\\ShIndex.ini");
+		if (result == 0) // 初始化SynCTI驱动程序和板卡
+		{
+			// nMaxCh 得到最大端口数据 创建相应的数据端口
+			startPortThread(MYAPI.SsmGetMaxCh());
+			MYAPI.SsmSetEvent(-1, -1, true, EventSet);
+			startAutoAlarm();
+			// 轮询数据监测
+			EventSet.dwWorkMode = SHP_A3.EVENT_POLLING;
+			MYAPI.SsmSetEvent(0xffff, -1, true, EventSet);
+
+			// 打印板卡信息
+			log.info(boardUsedInfo().toString());
+		} else
+			log.error("初始化SynCTI驱动程序和板卡失败！");
+		return result;
+	}
+
+	@Override
+	public int startPortThread(int maxPort) {
+		if (sht_PortTread.size() == 0) {
+			SHT_PortTread.isThreadStop = false;
+			for (int i = 0; i < maxPort; i++) {
+				// 设置线程开始
+				sht_PortTread.add(new SHT_PortTread(i));
+				MYAPI.SsmEnableRxDtmf(i, 1); // 设置接收DTMF字符
+				MYAPI.SsmSetDtmfStopPlay(i, 1); // 设定放音任务可以由于接收到DTMF字符
+				MYAPI.SsmSetDTMFStopPlayCharSet(i, "1,2,3,4,5,6,7,8,9,0,*,#");
+			}
+			// 启动线程
+			for (int i = 0; i < sht_PortTread.size(); i++) {
+				sht_PortTread.get(i).start();
+			}
+		}
+		return 0;
+	}
+
+	@Override
+	public int endPortThread() {
+		if (sht_PortTread.size() > 0) {
+			SHT_PortTread.isThreadStop = true;
+		}
+		sht_PortTread.clear();
+		return 0;
+	}
+
+	@Override
+	public int startAutoAlarm() {
+		// 启动监控线程
+		if (monitor == null) {
+			monitor = new TransactionStream();
+			monitor.start();
+		}
+		return 0;
+	}
+
+	@Override
+	public int stopAutoAlarm() {
+		if (monitor != null && !monitor.isThreadStop) {
+			monitor.isThreadStop = true;
+			monitor = null;
+		}
+		return 0;
+	}
+
+	@Override
+	public String stopBoard() {
+		if (stopAutoAlarm() == 0) {
+			log.info("停止自动接警中...");
+			if (endPortThread() == 0) {
+				log.info("停止结束线程中...");
+				if (closeBoard() == null) {
+					log.info("停止板卡中...");
+					log.info("初始化原始数据");
+					return null;
+				}
+			}
+		}
+		return "停止程序失败！";
+	}
+}

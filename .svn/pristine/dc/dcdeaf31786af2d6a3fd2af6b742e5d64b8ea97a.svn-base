@@ -1,0 +1,116 @@
+package com.swz.system.config.web.controller;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.swz.data.vo.mysql.Info_user;
+import com.swz.voice.manager.ConfigDatas;
+import com.swz.voice.service.AutoAlarmProc;
+
+@RestController
+public class DeviceOperateController extends BaseController {
+	@RequestMapping(value = "/OpenDevice")
+	public Map<String, Object> voiceDeviceOpen(HttpServletRequest request) {
+		// 按照权限分配职能
+		HttpSession session = request.getSession();
+		Info_user user = (Info_user) session.getAttribute("UserId");
+		if (getUserPower((user.getUser_id())) > 9) {
+			// 尝试打开设备
+			return returnErrorCode(AutoAlarmProc.openAlarmProc());
+		}
+		return returnErrorCode(2009);
+	}
+
+	@RequestMapping(value = "/CloseDevice")
+	public Map<String, Object> voiceDeviceClose(HttpServletRequest request) {
+		HttpSession session = request.getSession();
+		Info_user user = (Info_user) session.getAttribute("UserId");
+		if (getUserPower(user.getUser_id()) > 9) {
+			// 尝试关闭设备
+			return returnErrorCode(AutoAlarmProc.closeAlarmProc());
+		}
+		return returnErrorCode(2009);
+	}
+
+	/**
+	 * 输出参数配置页面
+	 * 
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping(value = "/ConfigInfo")
+	public String getRunStatus() throws UnsupportedEncodingException {
+		Map<String, Object> map = returnErrorCode(0);
+		ConfigDatas.toMap(map);
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>");
+		sb.append("<head>");
+		sb.append("<title>系统当前基础配置</title>");
+		sb.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />");
+		sb.append("</head>");
+		sb.append("<body>");
+		/**
+		 * <div align="center">
+		 * <table>
+		 * <tr>
+		 * <th>参数</th>
+		 * <th>当前值</th>
+		 * </tr>
+		 * <tr>
+		 * <td>侃大山</td>
+		 * <td>没谱</td>
+		 * </tr>
+		 * </table>
+		 * </div>
+		 */
+		sb.append("<div align=\"center\">");
+		sb.append("<H1>系统当前基础配置</H1>");
+		sb.append("<table><tr><th>参数</th><th>当前值</th></tr>");
+		for (String key : map.keySet()) {
+			sb.append("<tr><td>" + key + "</td><td>" + map.get(key)
+					+ "</td></tr>");
+		}
+		sb.append("</table></div>");
+		sb.append("</body></HTML>");
+		// 修改编码实现UTF-8编码转换为ISO-8859-1编码
+		return sb.toString();
+	}
+
+	@RequestMapping(value = "/ConfigPage")
+	public Map<String, Object> getConfigStatus() {
+		Map<String, Object> map = returnErrorCode(0);
+		ConfigDatas.toMap(map);
+		return map;
+	}
+
+	@RequestMapping(value = "/DeviceStatus")
+	public Map<String, Object> getDeviceStatus() {
+		Map<String, Object> map = returnErrorCode(0);
+		if (AutoAlarmProc.getOpenedDevice()) {
+			map.put("Opened", true);
+			map.put("OpenTime", AutoAlarmProc.getOpenedTime());
+		} else {
+			map.put("Opened", false);
+		}
+		return map;
+	}
+
+	@RequestMapping(value = "/BoardInfo", method = RequestMethod.GET)
+	public Map<String, Object> queryBoardInfo(HttpServletRequest request) {
+		return AutoAlarmProc.getBoardInfo();
+	}
+	@RequestMapping("/testDB")
+	public Map<?, ?> testMap() {
+		//手动建新的线程，在新线程中使用数据库
+		
+		//手动复值一个javabean
+		return returnErrorCode(0);
+	}
+}

@@ -1,0 +1,25 @@
+package com.swz.voice.model;
+
+import java.util.Date;
+
+public class VisitPhase {
+	private Date earlyTime;
+	private Date lateTime;
+
+	public Date getEarlyTime() {
+		return earlyTime;
+	}
+
+	public void setEarlyTime(Date earlyTime) {
+		this.earlyTime = earlyTime;
+	}
+
+	public Date getLateTime() {
+		return lateTime;
+	}
+
+	public void setLateTime(Date lateTime) {
+		this.lateTime = lateTime;
+	}
+
+}

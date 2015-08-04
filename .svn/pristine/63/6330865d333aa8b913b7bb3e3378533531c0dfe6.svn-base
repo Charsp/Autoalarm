@@ -1,0 +1,77 @@
+package com.swz.voice.impl;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.swz.voice.model.SHP_A3;
+import com.swz.voice.service.AutoAlarmProc;
+import com.swz.voice.service.TransactionStream;
+
+public class SHT_PortTread extends Thread {
+	private static Logger log = LoggerFactory.getLogger(SHT_PortTread.class);
+	private static final SHP_A3 MYAPI = SHP_A3.INSTANCE;
+	private int currPort;
+	private String telePhone;
+	// 共有变量
+	public static boolean isThreadStop = false;
+
+	// 初始化端口
+	public SHT_PortTread(int portNum) {
+		this.currPort = portNum;
+	}
+
+	public static void sleep(long i) {
+		try {
+			Thread.sleep(i);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void run() {
+		// 测试连接与否
+		while (!isThreadStop) {
+			if (MYAPI.SsmGetLineVoltage(currPort) < 30) {
+				// 电源断电时候也是可以检测到大于30的数据
+				// log.info(currPort +
+				// "MYAPI.SsmGetLineVoltage(currPort) < 30");
+				sleep(1000);
+				continue;
+			} else {
+				sleep(200);
+			}
+
+			while (MYAPI.SsmGetChState(currPort) != 0 && !isThreadStop) // 检查通道是否空闲
+			{
+				// log.info(currPort
+				// + "MYAPI.SsmGetChState(currPort) != 0 //当前堵塞了电话信号........");
+				sleep(500);
+			}
+			// 获取数据段程序(get网页数据)
+			telePhone = TransactionStream.getAlarmData(currPort);
+			// log.info(currPort + " 获取数据段程序(get电话号码)" + telePhone);
+
+			if (telePhone == null) {
+				// log.info("目前堆栈没有数据，电话号码获取失败！");
+				continue;
+			}
+
+			while (MYAPI.SsmPickup(currPort) != 0 && !isThreadStop) {
+				log.info("摘机失败，尝试重新连接...-----------------");
+				sleep(1500);
+			}
+
+			if (MYAPI.SsmAutoDial(currPort, telePhone) < 0) // 自动拨号
+			{
+				log.info("拨打电话失败" + MYAPI.SsmGetLastErrMsgA());
+				sleep(1000);
+			} else {
+				log.info("当前端口忙 ，可能和当前堵塞了电话信号........一样");
+			}
+			MYAPI.SsmClearRxDtmfBuf(currPort); // 清空DTMF字符缓存区
+		}
+		// 清理本端口数据(按键数据和忙数据)
+		AutoAlarmProc.MySHTHangup(currPort); // 挂机
+	}
+}

@@ -1,0 +1,32 @@
+package com.swz.voice.model;
+
+public class QuestionResult {
+	private Integer questionId;
+	private String questionType;
+	private String keyVal;
+
+	public Integer getQuestionId() {
+		return questionId;
+	}
+
+	public void setQuestionId(Integer questionId) {
+		this.questionId = questionId;
+	}
+
+	public String getQuestionType() {
+		return questionType;
+	}
+
+	public void setQuestionType(String questionType) {
+		this.questionType = questionType;
+	}
+
+	public String getKeyVal() {
+		return keyVal;
+	}
+
+	public void setKeyVal(String keyVal) {
+		this.keyVal = keyVal;
+	}
+
+}

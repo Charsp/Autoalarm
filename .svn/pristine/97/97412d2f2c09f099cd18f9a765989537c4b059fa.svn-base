@@ -1,0 +1,13 @@
+#系统运行时日志文件
+log4j.rootLogger=info,console,file
+#输出信息到控制台
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=[%-5p] %m%n
+#输出信息到配置文件
+log4j.appender.file=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.file.DatePattern='-'yyyy-MM-dd
+log4j.appender.file.File=./logs/Autoalarm.log
+log4j.appender.file.Append=true
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.file.layout.ConversionPattern=[%-5p] %d %37c %3x - %m%n

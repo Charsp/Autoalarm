@@ -1,0 +1,44 @@
+package com.swz.test;
+
+import java.util.Calendar;
+import java.util.Date;
+
+/**
+ * 
+ * @author Charsp
+ *
+ * @date 2015年1月27日
+ */
+public class Test {
+	private static Integer numInteger;
+
+	public Integer getNumInteger() {
+		return numInteger;
+	}
+
+	public static void main(String[] args) throws InterruptedException {
+		// System.out.println("d"+numInteger);
+		// Map<String, Integer>map =new HashMap<String, Integer>();
+		// map.put("123",123);
+		// Integer integer =123;
+		// List<VisitInfo> visitInfos = new ArrayList<VisitInfo>();
+		// VisitInfo visitInfo = new VisitInfo();
+		// visitInfo.setQuestion("dd");
+		// visitInfo.setQuestion_type("xxxxxx");
+		// visitInfos.add(visitInfo);
+		// visitInfos.add(visitInfo);
+		//
+		// JSONObject alarmSignal = JSONObject.fromObject(visitInfos.get(0));
+		// alarmSignal.put("AutoVisit", "AutoVisit");
+		//
+		// visitInfos.remove(0);
+		// System.out.println(visitInfos.size() + "  ddddd " + alarmSignal);
+		Date date = new Date();
+		Thread.sleep(1000);
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(1970, 0, 1);
+
+		System.err.println(date + "dddddd" + calendar.getTime());
+
+	}
+}

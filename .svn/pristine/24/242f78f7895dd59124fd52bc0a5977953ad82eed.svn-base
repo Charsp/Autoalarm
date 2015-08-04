@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 自定义命名空间 （公司相关com.swz,个人相关org.charsp,） -->
+<mapper namespace="com.swz.test">
+	<!-- 设置缓冲区代码 -->
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache" readOnly="true" 
+		/> -->
+	<cache readOnly="true" />
+	<!-- 手动映射(数据库和实体类匹配映射) type可以是别名 <typeAlias alias="userinfo" type="com.swz.system.dao.Userinfo" 
+		/> -->
+	<resultMap id="BaseResultMap" type="userinformation">
+		<id column="iduserinfo" property="iduserinfo" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		iduserinfo,
+		username,
+		password,
+		nick,
+		age,
+		personal,
+		date
+	</sql>
+
+	<sql id="Base_Where_Clause">
+		<where>
+			<trim prefixOverrides="and">
+				<if test="id != null">and iduserinfo = #{id}</if>
+				<if test="username != null">and username = #{username}</if>
+				<if test="password != null">and password = #{password}</if>
+
+				<!-- 模糊查询 -->
+				<if test="dicNameLike != null">and dic_name like CONCAT("%",#{dicNameLike},"%")</if>
+				<if test="dicGroupLike != null">and dic_group like CONCAT("%",#{dicGroupLike},"%")</if>
+			</trim>
+		</where>
+		<if test="sorting != null">order by ${sorting}</if>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</sql>
+	<!-- 查询 parameterType类型为Map的时候才可用 XX!=null,其他类型使用 isNotNull -->
+	<select id="testselect" resultMap="BaseResultMap" parameterType="int">
+		select
+		<include refid="Base_Column_List" />
+		from userinfo
+		where iduserinfo = #{id}
+		<!-- <include refid="Base_Where_Clause" /> -->
+	</select>
+</mapper>  
