@@ -1,0 +1,5 @@
+AutoAlarmProc：自动接警主线程
+	//接警粒度控制代码
+	
+TransactionStream ：接警流处理 (主要代码段)
+	

@@ -6,7 +6,7 @@ import java.util.List;
 import com.sun.jna.Structure;
 
 public class MESSAGE_INFO extends Structure {
-	public short wEventCode = 0;
+	public short wEvent = 0;
 	public int nReference = 0;
 	public long dwParam = 0;
 

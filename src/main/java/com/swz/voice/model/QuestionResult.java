@@ -1,5 +1,12 @@
 package com.swz.voice.model;
 
+/**
+ * QuestionResult
+ * 
+ * @author CharsBoll
+ *
+ * @date 2015年8月5日
+ */
 public class QuestionResult {
 	/**
 	 * 问题id

@@ -179,7 +179,7 @@ public class AutoAlarmProc extends Thread {
 						if (vehicleId.containsKey(EventCh)
 								&& !TransactionStream.isOverdued(vehicleId.get(
 										EventCh).getString("telePhone"))) {
-							if (Event.wEventCode == SHP_A3.E_PROC_PlayEnd) {
+							if (Event.wEvent == SHP_A3.E_PROC_PlayEnd) {
 								// 播放完成时间
 								// log.info("一直出现播放完成事件 164");
 								if (portClose.containsKey(EventCh)
@@ -195,7 +195,7 @@ public class AutoAlarmProc extends Thread {
 											"AutoVisit")) {
 
 								// 要有端口的事件类型，语音接警和语音回访
-								if (Event.wEventCode == SHP_A3.E_CHG_ToneAnalyze) {
+								if (Event.wEvent == SHP_A3.E_CHG_ToneAnalyze) {
 									int ToneType = MYAPI
 											.SsmGetToneAnalyzeResult(EventCh);
 									// 检测到拨号音
@@ -237,7 +237,7 @@ public class AutoAlarmProc extends Thread {
 									}
 								}
 								// E_CHG_RcvDTMF 信号！！
-								if (Event.wEventCode == SHP_A3.E_CHG_RcvDTMF) {
+								if (Event.wEvent == SHP_A3.E_CHG_RcvDTMF) {
 									String pszDtmf = MYAPI
 											.SsmGetDtmfStrA(EventCh);
 									switch (pszDtmf) {
@@ -327,7 +327,7 @@ public class AutoAlarmProc extends Thread {
 							else if (ConfigDatas.getVisitInfos() != null
 									&& !ConfigDatas.getVisitInfos().isEmpty()) {
 								// 要有端口的事件类型，语音接警和语音回访
-								if (Event.wEventCode == SHP_A3.E_CHG_ToneAnalyze) {
+								if (Event.wEvent == SHP_A3.E_CHG_ToneAnalyze) {
 									int ToneType = MYAPI
 											.SsmGetToneAnalyzeResult(EventCh);
 									// 播放当前语音
@@ -379,7 +379,7 @@ public class AutoAlarmProc extends Thread {
 									}
 								}// end wEventCode
 									// E_CHG_RcvDTMF 信号 用户互交程序
-								if (Event.wEventCode == SHP_A3.E_CHG_RcvDTMF) {
+								if (Event.wEvent == SHP_A3.E_CHG_RcvDTMF) {
 									String pszDtmf = MYAPI
 											.SsmGetDtmfStrA(EventCh);
 									// 获取当前端口位置的问题

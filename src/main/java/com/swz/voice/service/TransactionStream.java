@@ -16,6 +16,7 @@ import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.swz.data.vo.ProcessAlarmLog;
 import com.swz.data.vo.mysql.Log_alarm;
 import com.swz.data.vo.mysql.Log_visit;
 import com.swz.voice.impl.SHT_PortTread;
@@ -43,7 +44,9 @@ public class TransactionStream extends Thread {
 	private final String MYINF_USER = "vehiclenum=VEHICLENUM&sign=info&objectid=OBJECTID";
 	private final String MYINFAddress = ConfigDatas.getMYINFAddress();
 	private static JSONObject alarmSignal = null;
-	/**
+	public static ProcessAlarmLog beginAlarmLog = new ProcessAlarmLog();
+	public static ProcessAlarmLog noProcess = new ProcessAlarmLog();
+	/*
 	 * 当前大约延时(秒)
 	 */
 	private static int currSecond = 0;
@@ -75,6 +78,7 @@ public class TransactionStream extends Thread {
 					else
 						alarm.put("msg", "当前报警类型被过滤！");
 					sendFailInfo(alarm, true);
+					alarm = null;
 					return;
 				}
 				// 车辆信息
@@ -90,10 +94,14 @@ public class TransactionStream extends Thread {
 				paramString = HttpServlet.sendGet(MYINFAddress, paramString,
 						null);
 				// log.info("返回的数据为" + paramString);
-
-				String telePhone = JSONObject.fromObject(paramString)
-						.getString("AlldayTel1");
-
+				String telePhone = "";
+				try {
+					telePhone = JSONObject.fromObject(paramString).getString(
+							"AlldayTel1");
+				} catch (Exception e) {
+					telePhone = "MYINF没有查询到用户手机信息";
+					e.printStackTrace();
+				}
 				// log.info("获得用户电话为：" + telePhone);
 				// 调试模式使用我的手机号码
 				if (ConfigDatas.isDebug()) {
@@ -107,7 +115,6 @@ public class TransactionStream extends Thread {
 				if (m.matches()) {
 					// 必须加9
 					telePhone = "9" + isTelephone(telePhone);
-
 					// 判断程序中是已经否存在之前的电话号码
 					if (!hasVehicleId(telePhone)) {
 						// 没有则加入
@@ -119,11 +126,15 @@ public class TransactionStream extends Thread {
 						alarmSignal = JSONObject.fromObject(alarm);
 						alarmSignal.put("telePhone", telePhone);
 						alarmSignal.put("car_no", carInfo.getString("car_no"));
+						// 可能会拨打的电话
+						beginAlarmLog.addContentList(jsonObject);
+						alarm = null;
 					}
 					// 之前还在，报重复报警
 					else {
 						alarm.put("msg", "报重复报警！");
 						sendFailInfo(alarm, true);
+						alarm = null;
 						// log.info("-----------报重复报警： " + telePhone + alarm
 						// + "----------------------");
 					}
@@ -132,19 +143,25 @@ public class TransactionStream extends Thread {
 				else {
 					alarm.put("msg", "手机号码" + telePhone + "识别失败");
 					sendFailInfo(alarm, true);
+					alarm = null;
 					// log.info("手机号码" + telePhone + "识别失败！");
 				}
 			} else {
 				// log.info("目前没有数据需要处理");
+				alarm = null;
 			}
 		} catch (Exception e) {
 			log.error(GETPATH + " 服务器接口错误！" + e.getMessage(), e);
-			if (!alarm.isEmpty()) {
+			if (alarm != null && !alarm.isEmpty()) {
 				// 程序特殊异常，发送1到服务器
 				alarm.put("msg", "(漏网之鱼)清除未缓存的数据");
 				sendFailInfo(alarm, true);
+				alarm = null;
 				// log.info("(漏网之鱼)清除未缓存的数据" + alarm);
 			}
+		}
+		if (alarm != null && !alarm.isEmpty()) {
+			noProcess.addContentList(alarm);
 		}
 	}
 
@@ -225,6 +242,8 @@ public class TransactionStream extends Thread {
 	public void sendUserPress(int currPort, boolean value) {
 		JSONObject userInfo = AutoAlarmProc.vehicleId.get(currPort);
 		if (userInfo != null && !userInfo.containsKey("AutoVisit")) {
+			beginAlarmLog.removeContent(userInfo);
+			log.info("发送代码结果集:" + userInfo);
 			// 发送用户确认信息
 			String parameter = "mode=MODE&id=" + userInfo.getString("id");
 			// 日志信息
@@ -292,7 +311,7 @@ public class TransactionStream extends Thread {
 	 */
 	public void sendFailInfo(JSONObject userInfo, boolean retry) {
 		if (userInfo != null && !userInfo.containsKey("AutoVisit")) {
-
+			log.info("发送代码结果集:" + userInfo);
 			String parameter = "mode=1&id=" + userInfo.getString("id");
 			// 添加计时器，控制上传数据频率
 			// 设置端口为空，拉底时间为0说明有一个好使(只是一个)
@@ -305,6 +324,8 @@ public class TransactionStream extends Thread {
 				// log.info("发送代码失败，请求人工手动发送以下内容：");
 				log.error(PUTPATH + "?" + parameter);
 			}
+			userInfo.clear();
+			// 这句估计不起作用
 			userInfo = null;
 		}
 		// 继续报警截取

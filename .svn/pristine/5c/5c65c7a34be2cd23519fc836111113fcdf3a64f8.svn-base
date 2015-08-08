@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop   
+        http://www.springframework.org/schema/aop/spring-aop.xsd  
+        http://www.springframework.org/schema/lang
+        http://www.springframework.org/schema/lang/spring-lang.xsd 
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/context   
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/websocket 
+        http://www.springframework.org/schema/websocket/spring-websocket.xsd">
+
+	<!-- Activates annotation-based bean configuration <context:annotation-config 
+		/> -->
+	<!-- Scans for application @Components to deploy -->
+	<context:component-scan base-package="com.swz" />
+
+	<!-- 数据库配置文件位置 -->
+	<context:property-placeholder location="classpath:config/jdbc.properties" />
+
+	<!-- 多种数据库类型可使用databaseIdProvider定义 -->
+	<!-- dbcp数据库配置 -->
+	<bean id="dataSource" destroy-method="close"
+		class="org.apache.commons.dbcp.BasicDataSource">
+		<!-- 驱动类型 -->
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<!-- 基础配置 -->
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<!-- 高级配置 -->
+		<property name="minIdle" value="${jdbc.minIdle}" />
+		<property name="maxIdle" value="${jdbc.maxIdle}" />
+		<property name="maxWait" value="${jdbc.maxWait}" />
+		<property name="maxActive" value="${jdbc.maxActive}" />
+		<property name="initialSize" value="${jdbc.initialSize}" />
+	</bean>
+
+	<!-- 使用annotation注解方式配置事务 <tx:annotation-driven transaction-manager="transactionManager" 
+		/> -->
+
+	<!-- 事务处理 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- AOP配置事物 -->
+	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="query*" read-only="true" propagation="REQUIRED" />
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED" />
+			<tx:method name="insert*" propagation="REQUIRED" />
+			<tx:method name="*" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- 配置AOP切面 -->
+	<aop:config>
+		<!-- 服务层切面 -->
+		<aop:pointcut id="transactionPointcut" expression="execution(* com.swz..service.*.*(..))" />
+		<aop:advisor pointcut-ref="transactionPointcut"
+			advice-ref="transactionAdvice" />
+	</aop:config>
+
+	<!-- mybatis配置 -->
+	<!-- 1. Mybatis的sqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatisMap.xml"></property>
+		<property name="mapperLocations" value="classpath:mapper/mysql/**/*Mapper.xml"></property>
+	</bean>
+
+	<!-- 2. Mybatis的SQLSession模板 -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate"
+		destroy-method="clearCache">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+	<!-- 包扫描，需提供一个基础包，多个包使用，或者；分割(英文逗号和分号) -->
+	<!-- <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"> -->
+	<!-- <property name="basePackage" value="com.tiantian.mybatis.mapper" /> -->
+	<!-- <property name="markerInterface" value="com.tiantian.mybatis.mapper.SuperMapper" 
+		/> -->
+	<!-- <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" 
+		/> -->
+	<!-- </bean> -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxInMemorySize" value="10240" />
+		<property name="maxUploadSize" value="50000000" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+	<bean id="websocket" class="com.swz.websocket.handler.WebsocketEndPoint" />
+
+	<websocket:handlers>
+		<websocket:mapping path="/websocket.js" handler="websocket" />
+		<websocket:handshake-interceptors>
+			<bean class="com.swz.websocket.HandshakeInterceptor" />
+		</websocket:handshake-interceptors>
+	</websocket:handlers>
+</beans>

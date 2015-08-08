@@ -2,6 +2,12 @@ package com.swz.voice.model;
 
 import java.util.List;
 
+/**
+ * 
+ * @author CharsBoll
+ *
+ * @date 2015年8月5日
+ */
 public class RecAlarmSetting {
 	private Integer teamHandle;
 	private Integer timeSpace;

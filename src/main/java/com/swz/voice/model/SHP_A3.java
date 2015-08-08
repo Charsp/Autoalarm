@@ -26,7 +26,8 @@ public interface SHP_A3 extends Library {
 
 	final int SS1IN_WAIT_SET_KB = 10;
 	final int SS1IN_BWD_KB5 = 11;
-	final int SS1IN_TALKING_REMOTE_HANGUPED = 12; // // 鑷姩鍛煎叆鏃舵娴嬪埌涓诲彨鐢ㄦ埛鍏堟寕鏈�?;
+	final int SS1IN_TALKING_REMOTE_HANGUPED = 12; // //
+													// 鑷姩鍛煎叆鏃舵娴嬪埌涓诲彨鐢ㄦ埛鍏堟寕鏈�?;
 
 	final int SS1OUT_TALKING_REMOTE_HANGUPED = 20; // //
 													// 鑷姩鍛煎嚭杩涘叆閫氳瘽鍚庢娴嬪埌琚彨鐢ㄦ埛鍏堟寕鏈�?;
@@ -51,7 +52,6 @@ public interface SHP_A3 extends Library {
 	final int SS1OUT_UNDEFINED_BWD_A = 37; // // �?跺埌鏈畾涔夌殑鍚庡悜A缁勪俊鍙�?;
 	final int SS1OUT_UNDEFINED_BWD_KB = 38; // // �?跺埌鏈畾涔夌殑KB淇�?�彿;
 	// } As int
-
 	// enum{
 	final int S_CALL_STANDBY = 0;
 	final int S_CALL_PICKUPED = 1;
@@ -353,11 +353,12 @@ public interface SHP_A3 extends Library {
 	// void printf(String format, Object... args);((Platform.isWindows() ?
 	// "msvcrt" : "c"),
 
-	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@ INITIALIZATION OPERATION  @@@@@@@@@@@@@@@@@@@@@@@@
-	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@ INITIALIZATION OPERATION
+	// @@@@@@@@@@@@@@@@@@@@@@@@
+	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	public String SsmGetLastErrMsgA();
-	
+
 	public int SsmSetEvent(Integer wEvent, Integer nReference, boolean bEnable,
 			EVENT_SET_INFO pEventSet);
 
@@ -586,6 +587,13 @@ public interface SHP_A3 extends Library {
 
 	public int SsmChkWaitDtmf(int ch, String pszDtmf);
 
+	/**
+	 * 取消 WaitDtmf 任务。
+	 * 
+	 * @param ch
+	 * @return-1 出现错误<br>
+	 *           0 调用成功
+	 */
 	public int SsmCancelWaitDtmf(int ch);
 
 	public int SsmSetWaitDtmfEx(int ch, int wTimeOut, int wMaxLen,
@@ -842,22 +850,264 @@ public interface SHP_A3 extends Library {
 	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	// @@@@@@@@@@@@@@@@@@@@@ CALL OPERATION @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	/**
+	 * 在通道上执行摘机操作。
+	 * 
+	 * @param ch
+	 * @return 1 操作失败 <br>
+	 *         0 操作成功
+	 */
 	public int SsmPickup(int ch);
 
+	/**
+	 * 查询摘机操作是否执行完毕。
+	 * 
+	 * @param ch
+	 * @return -1 操作失败<br>
+	 *         0 指定通道处于实际挂机状态 <br>
+	 *         1 指定通道处于实际摘机状态
+	 */
 	public int SsmCheckActualPickup(int ch);
 
+	/**
+	 * 暂且不知道其作用
+	 * 
+	 * @param ch
+	 * @param bFlag
+	 * @return
+	 * @deprecated
+	 */
 	public int SsmSetPickupNow(int ch, int bFlag);
 
+	/**
+	 * 端口主动挂机
+	 * 
+	 * @param ch
+	 *            频道号
+	 * @return
+	 */
 	public int SsmHangup(int ch);
 
+	/**
+	 * 端口主动拨号
+	 * 
+	 * @param ch
+	 * @param szPhoNum
+	 * @return -1 调用失败。失败原因可以通过调用函数 SsmGetLastErrMsg 获得 <br>
+	 *         0 调用成功
+	 */
 	public int SsmAutoDial(int ch, String szPhoNum);
 
+	/**
+	 * 查询 AutoDial 任务的执行进展情况。
+	 * 
+	 * @param ch
+	 * @return 0 DIAL_STANDBY 通道空闲，没有执行 AutoDial 任务 <br>
+	 *         1 DIAL_DIALING 正在发送被叫号码 <br>
+	 *         2 DIAL_ECHOTONE 回铃。 模拟中继线通道：拨号完成后，线路上检测到了回铃音 SS1
+	 *         通道：表明去话呼叫时，驱动程序收到对端交换机的后向 KB=1 或 KB=6 信号，表明被叫空闲 ISDN
+	 *         通道：表明驱动程序收到对端交换机的提醒消息（ALERTING） TUP/ISUP
+	 *         通道：表明驱动程序收到对端交换机的地址齐消息(ACM) <br>
+	 *         3 DIAL_NO_DIALTONE 没有在线路上检测到拨号音，AutoDial 任务失败。只适用于模拟中继线通 道 <br>
+	 *         4 DIAL_BUSYTONE 被叫用户忙，AutoDial 任务失败。 对于模拟中继线通道，表明线路上检测到了忙音信号 <br>
+	 *         5 DIAL_ECHO_NOVOICE 拨号完成后，线路上先是出现了回铃音，然后保持静默。AutoDial 任务终
+	 *         止。只适用于模拟中继线通道 <br>
+	 *         6 DIAL_NOVOICE 拨号完成后，线路上没有检测到回铃音，一直保持静默。AutoDial 任务终
+	 *         止。只适用于模拟中继线通道 <br>
+	 *         7 DIAL_VOICE 被叫用户摘机，AutoDial 任务完成 <br>
+	 *         8 DIAL_VOICEF1 被叫用户摘机（检测到 F1 频率的应答信号），AutoDial 任务完成。只适用 于模拟中继线通道 <br>
+	 *         9 DIAL_VOICEF2 被叫用户摘机（检测到 F2 频率的应答信号），AutoDial 任务完成。只适用 于模拟中继线通道 <br>
+	 *         10 DIAL_NOANSWER 被叫用户在指定时间内没有摘机，AutoDial 失败。不适用于 IP 卡 SIP 通 道 <br>
+	 *         11 DIAL_FAILURE AutoDial 任务失败。失败原因可以通过函数
+	 *         SsmGetAutoDialFailureReason 获得 <br>
+	 *         12 DIAL_INVALID_PHONUM 被叫用户号码为空号，AutoDial 任务失败。不适用于 ISDN 通道和 IP 卡
+	 *         SIP 通道 <br>
+	 *         13 DIAL_SESSION_PROCE EDING IP 卡 SIP 通道收到 18X 消息(180 除外) <br>
+	 *         14 DIAL_ISDN_PROGRESS ISDN 通道收到对端交换机的 PROGRESS 消息。详细的消息内容可通过 函数
+	 *         SsmISDNGetProgressMsg 获得 功能
+	 */
 	public int SsmChkAutoDial(int ch);
 
+	/**
+	 * 获取去话呼叫失败的具体原因。
+	 * 
+	 * @param ch
+	 * @return -1 操作失败 <br>
+	 *         0 ATDL_NULL 没有呼出任务 <br>
+	 *         1 ATDL_Cancel AutoDial 任务被应用程序取消 <br>
+	 *         2 ATDL_WaitDialAnsTimeout 等待被叫应答超时（针对 TUP 协议） <br>
+	 *         3 ATDL_WaitRemotePickupTimeout 等待被叫摘机超时 <br>
+	 *         10 ATDL_Mtp3Unusable SS7 信令：信令不可用 <br>
+	 *         11 ATDL_RcvSSB SS7 信令：收到对端交换机的 SSB 消息 <br>
+	 *         12 ATDL_RcvSLB SS7 信令：收到对端交换机的 SLB 消息 <br>
+	 *         13 ATDL_RcvSTB SS7 信令：收到对端交换机的 STB 消息 <br>
+	 *         14 ATDL_RcvUNN SS7 信令：收到对端交换机的 UNN 消息 <br>
+	 *         15 ATDL_RcvSEC SS7 信令：收到对端交换机的 SEC 消息 <br>
+	 *         16 ATDL_RcvCGC SS7 信令：收到对端交换机的 CGC 消息 <br>
+	 *         17 ATDL_RcvNNC SS7 信令：收到对端交换机的 NNC 消息 <br>
+	 *         18 ATDL_RcvCFL SS7 信令：收到对端交换机的 CFL 消息 <br>
+	 *         19 ATDL_RcvLOS SS7 信令：收到对端交换机的 LOS 消息 <br>
+	 *         20 ATDL_RcvSST SS7 信令：收到对端交换机的 SST 消息 <br>
+	 *         21 ATDL_RcvACB SS7 信令：收到对端交换机的 ACB 消息 <br>
+	 *         22 ATDL_RcvDPN SS7 信令：收到对端交换机的 DPN 消息 <br>
+	 *         23 ATDL_RcvEUM SS7 信令：收到对端交换机的 EUM 消息 <br>
+	 *         24 ATDL_RcvADI SS7 信令：收到对端交换机的 ADI 消息 <br>
+	 *         25 ATDL_RcvBLO SS7 信令：收到对端交换机的 BLO 消息 <br>
+	 *         26 ATDL_DoubleOccupy SS7 信令：检出同抢 <br>
+	 *         27 ATDL_CircuitReset SS7 信令：收到对端交换机的电路/群复原信号 <br>
+	 *         28 ATDL_BlockedByRemote SS7 信令：电路被对端交换机闭塞 <br>
+	 *         40 ATDL_SS1WaitOccupyAckTimeout No.1 信令：等待占用应答信号超时 <br>
+	 *         41 ATDL_SS1RcvCAS_HANGUP No.1 信令：收到后向拆线信号 <br>
+	 *         42 ATDL_SS1RcvA4 No.1 信令：收到 A4 信号（机键拥塞） <br>
+	 *         43 ATDL_SS1RcvA5 No.1 信令：收到 A5 信号（空号） <br>
+	 *         44 ATDL_SS1RcvUndefinedAx No.1 信令：收到未定义后向 A 信号 <br>
+	 *         45 ATDL_SS1RcvUndefinedAxOnTxCallerId No.1 信令：送主叫收到未定义 A 杭 州 三 汇
+	 *         信 息 工 程 有 限 公 司 Synway Information Engineering Co., Ltd 第 2 章
+	 *         SynCTI 开发包函数说明 216 <br>
+	 *         46 ATDL_SS1WaitAxTimeout No.1 信令：等候接收后向 A 组信号超时 <br>
+	 *         47 ATDL_SS1WaitAxStopTimeout No.1 信令：等候后向 A 组信号停发超时 <br>
+	 *         48 ATDL_SS1WaitAxTimeoutOnTxCallerId No.1 信令：送主叫时等候 A 信号超时 <br>
+	 *         49 ATDL_SS1WaitAxStopTimeoutOnTxCallerId No.1 信令：送主叫 A 信号停发超时 <br>
+	 *         50 ATDL_SS1RcvKB2 No.1 信令：收到 KB2 信号（用户“市忙”） <br>
+	 *         51 ATDL_SS1RcvKB3 No.1 信令：收到 KB3 信号（用户“长忙”） <br>
+	 *         52 ATDL_SS1RcvKB4 No.1 信令：收到 KB4 信号（机键拥塞） <br>
+	 *         53 ATDL_SS1RcvKB5 No.1 信令：收到 KB5 信号（空号） <br>
+	 *         54 ATDL_SS1RcvUndefinedKB No.1 信令：收到未定义的 KB 信号 <br>
+	 *         55 ATDL_SS1WaitKBTimeout No.1 信令：接收后向 KB 信号超时 <br>
+	 *         56 ATDL_SS1WaitKBStopTimeout No.1 信令：等候对方方停发 KB 信号超时 <br>
+	 *         60 ATDL_ISDNNETISBUS ISDN：网络忙（不再使用） <br>
+	 *         61 ATDL_ISDNEMPTYNO ISDN：空号 <br>
+	 *         65 ATDL_IllegalMessage SS7 信令：收到对端交换机的非法消息 <br>
+	 *         66 ATDL_RcvREL ISUP：收到对端交换机的释放消息（REL） <br>
+	 *         67 ATDL_RcvCBK TUP：收到对端交换机的 CBK 消息 <br>
+	 *         68 ATDL_IPInvalidPhonum IP：所拨号码无效 <br>
+	 *         69 ATDL_IPRemoteBusy IP：对端忙 <br>
+	 *         70 ATDL_IPBeenRefused IP：被拒绝 <br>
+	 *         71 ATDL_IPDnsFail IP：DNS 无效 <br>
+	 *         72 ATDL_IPCodecUnSupport IP：不支持的 CODEC 类型 <br>
+	 *         73 ATDL_IPOutOfResources IP：没有可用的资源 <br>
+	 *         74 ATDL_IPLocalNetworkErr IP：本端网络出现错误 <br>
+	 *         75 ATDL_IPRemoteNetworkErr IP：远端网络出现错误 4xx、5xx、 6xx IP：远端回复的 SIP
+	 *         信令值 <br>
+	 *         100+n 其他原因，n 为 ISDN 协议抛出的原因号码（具体原因可 查询附录 1 ISDN 通道释放原因值表）
+	 */
 	public int SsmGetAutoDialFailureReason(int ch);
 
 	public int SsmGetBlockReason(int ch);
 
+	/**
+	 * 获取通道的当前状态。
+	 * 
+	 * @param ch
+	 * @return 0 S_FAX_Wait 空闲 <br>
+	 *         1 S_CALL_PICKUPED 摘机 <br>
+	 *         2 S_CALL_RINGING 振铃 <br>
+	 *         3 S_CALL_TALKING 通话 <br>
+	 *         4 S_CALL_ANALOG_WAITDIALTONE 模拟中继线通道：去话呼叫，等待拨号音 <br>
+	 *         5 S_CALL_ANALOG_TXPHONUM 模拟中继线通道：去话呼叫，拨号 <br>
+	 *         6 S_CALL_ANALOG_WAITDIALRESULT 模拟中继线通道：去话呼叫，等待拨号结果 <br>
+	 *         7 S_CALL_PENDING 挂起状态。函数 SsmGetPendingReason 可以用来取得挂起原因 <br>
+	 *         8 S_CALL_OFFLINE 线路断开状态 <br>
+	 *         9 S_CALL_WAIT_REMOTE_PICKUP 去话呼叫，等候被叫用户摘机 <br>
+	 *         10 S_CALL_ANALOG_CLEAR 模拟中继线通道：内部状态 <br>
+	 *         11 S_CALL_UNAVAILABLE 通道不可用 <br>
+	 *         12 S_CALL_LOCKED 呼出锁定 <br>
+	 *         19 S_CALL_RemoteBlock 对端闭塞 <br>
+	 *         20 S_CALL_LocalBlock 本地闭塞 <br>
+	 *         30 S_CALL_Ss1InWaitPhoNum SS1 通道：接收被叫号码 <br>
+	 *         31 S_CALL_Ss1InWaitFwdStop SS1 通道：等待对端交换机停发前向信号 <br>
+	 *         32 S_CALL_Ss1InWaitCallerID SS1 通道：接收 Caller ID <br>
+	 *         33 S_CALL_Ss1InWaitKD SS1 通道：接收 KD 信号 <br>
+	 *         34 S_CALL_Ss1InWaitKDStop SS1 通道：等待对端交换机停发 KD 信号 <br>
+	 *         35 S_CALL_SS1_SAYIDLE SS1 通道：向对端交换机发送示闲信号 <br>
+	 *         36 S_CALL_SS1WaitIdleCAS SS1 通道：等待对端交换机的示闲信令 <br>
+	 *         37 S_CALL_SS1PhoNumHoldup SS1 通道：号码拦截状态 <br>
+	 *         38 S_CALL_Ss1InWaitStopSendA3p SS1 通道：等待对端交换机停发脉冲方式的 A3 信号 <br>
+	 *         40 S_CALL_Ss1OutWaitBwdAck SS1 通道：等待对端交换机应答占用证实信号 <br>
+	 *         41 S_CALL_Ss1OutTxPhoNum SS1 通道：发送被叫号码 <br>
+	 *         42 S_CALL_Ss1OutWaitAppendPhoNum SS1 通道：等待应用程序追加电话号码 <br>
+	 *         43 S_CALL_Ss1OutTxCallerID SS1 通道：发送主叫号码 <br>
+	 *         44 S_CALL_Ss1OutWaitKB SS1 通道：等待对端交换机的 KB 信号 <br>
+	 *         45 S_CALL_Ss1OutDetectA3p SS1 通道：等待对端交换机的 A3 脉冲信号 <br>
+	 *         50 S_FAX_ROUND FAX 通道：状态转移过程中 <br>
+	 *         51 S_FAX_PhaseA FAX 通道：传真呼叫建立（PhaseA） <br>
+	 *         52 S_FAX_PhaseB FAX 通道：传真报文前处理（PhaseB） <br>
+	 *         53 S_FAX_SendDCS FAX 通道：传真发送中向接收方发送 DCS 信号 <br>
+	 *         54 S_FAX_Train FAX 通道：传真报文传输前传输训练 <br>
+	 *         55 S_FAX_PhaseC FAX 通道：传真报文传输中（PhaseC） <br>
+	 *         56 S_FAX_PhaseD FAX 通道：传真报文后处理(PhaseD) <br>
+	 *         57 S_FAX_NextPage FAX 通道：传真报文传输下一页 <br>
+	 *         58 S_FAX_AllSent FAX 通道：传真发送中报文传输结束 <br>
+	 *         59 S_FAX_PhaseE FAX 通道：传真呼叫释放(PhaseE) <br>
+	 *         60 S_FAX_Reset FAX 通道：复位 MODEM <br>
+	 *         61 S_FAX_Init FAX 通道：初始化 MODEM <br>
+	 *         62 S_FAX_RcvDCS FAX 通道：传真接收，接收发方的 DCS 信号 <br>
+	 *         63 S_FAX_SendFTT FAX 通道：传真接收，发送训练失败信号 FTT <br>
+	 *         64 S_FAX_SendCFR FAX 通道：传真接收，发送可接受的证实信号 CFR <br>
+	 *         65 S_FAX_SendPPS FAX 通道：传真发送，ECM 模式下，传真进行后续协商 <br>
+	 *         66 S_FAX_RcvPPR FAX 通道：传真发送 PPS 后接收 PPR 信号 <br>
+	 *         67 S_FAX_RepeatECMPage FAX 通道：传真发送，ECM 模式下，传真进行数据重发 <br>
+	 *         68 S_FAX_CTC_CTR FAX 通道：ECM 模式下，4 次重发后,进行肯定协商 <br>
+	 *         69 S_FAX_SendPPR FAX 通道：ECM 模式下，要求发送方重新发送数据 <br>
+	 *         70 S_TUP_WaitPcmReset TUP 通道：电路复原 <br>
+	 *         71 S_TUP_WaitSAM TUP 通道：等待对端交换机的后续地址消息 <br>
+	 *         72 S_TUP_WaitGSM TUP 通道：等待对端交换机的 GSM 消息 <br>
+	 *         73 S_TUP_WaitCLF TUP 通道：等待对端交换机的拆线消息 <br>
+	 *         74 S_TUP_WaitPrefix TUP 通道：接收入局字冠 <br>
+	 *         75 S_TUP_WaitDialAnswer TUP 通道：等待对端交换机的消息回应 <br>
+	 *         76 S_TUP_WaitRLG TUP 通道：等待对端交换机的 RLG 消息 <br>
+	 *         77 S_TUP_WaitSetCallerID TUP 通道：等待应用程序设置主叫号码 <br>
+	 *         81 S_ISDN_OUT_WAIT_NET_RESPONSE ISDN 通道：等待网络响应 <br>
+	 *         82 S_ISDN_OUT_PLS_APPEND_NO ISDN 通道：等待应用程序追加号码 <br>
+	 *         83 S_ISDN_IN_CHK_CALL_IN ISDN 通道：检测到呼入 <br>
+	 *         84 S_ISDN_IN_RCVING_NO ISDN 通道：正在接收号码 <br>
+	 *         85 S_ISDN_IN_WAIT_TALK ISDN 通道：准备进入通话 <br>
+	 *         86 S_ISDN_OUT_WAIT_ALERT ISDN 通道：等待对方发提醒信号 <br>
+	 *         87 S_ISDN_CALL_BEGIN ISDN 通道：发起呼叫(去话)，或检测到呼入(来话) <br>
+	 *         88 S_ISDN_WAIT_HUANGUP ISDN 通道：等待挂机 <br>
+	 *         89 S_ISDN_IN_CALL_PROCEEDING ISDN 通道：呼叫进程 <br>
+	 *         100 S_CALL_SENDRING 磁石通道：发送振铃 <br>
+	 *         105 S_SPY_RCVPHONUM 监控通道：接收号码 <br>
+	 *         110 S_SPY_SS1RESET SS1 监控：复原 <br>
+	 *         111 S_SPY_SS1WAITBWDACK SS1 监控：等待后向证实 <br>
+	 *         112 S_SPY_SS1WAITKB SS1 监控：等待 KB <br>
+	 *         120 S_ISUP_WaitSAM ISUP 通道：等待对端交换机的 SAM <br>
+	 *         121 S_ISUP_WaitRLC ISUP 通道：等待对端交换机的释放监护信号 RLC <br>
+	 *         122 S_ISUP_WaitReset ISUP 通道：电路复原 <br>
+	 *         123 S_ISUP_LocallyBlocked ISUP 通道：本地闭塞 <br>
+	 *         124 S_ISUP_RemotelyBlocked ISUP 通道：远端闭塞 <br>
+	 *         125 S_ISUP_WaitDialAnswer ISUP 通道：等待对端交换机的消息回应 <br>
+	 *         126 S_ISUP_WaitINF ISUP 通道：等待对端交换机的 INF 消息 <br>
+	 *         127 S_ISUP_WaitSetCallerID ISUP 通道：等待应用程序设置主叫号码 <br>
+	 *         128 S_DTRC_ACTIVE DTR 通道：被监控话路处于非空闲状态 <br>
+	 *         129 S_ISUP_Suspend ISUP 通道：暂停 <br>
+	 *         130 S_CALL_EM_TXPHONUM E/M 通道：拨号或变声资源被占用 <br>
+	 *         131 S_CALL_EM_WaitIdleCAS E/M 通道：等待对端的示闲信号 <br>
+	 *         132 S_CALL_VOIP_DIALING IP 通道：VoIP 主叫拨号状态 <br>
+	 *         133 S_CALL_VOIP_WAIT_CONNECTED IP 通道：VoIP 被叫摘机等待进入通话状态 <br>
+	 *         134 S_CALL_VOIP_CHANNEL_UNUSABLE IP 通道：VoIP 通道目前不可用 <br>
+	 *         135 S_CALL_DISCONECT USB 连接断开 <br>
+	 *         136 S_CALL_SS1WaitFlashEnd SS1 通道：等待闪断发送结束 <br>
+	 *         137 S_CALL_FlashEnd SS1 通道：闪断结束 <br>
+	 *         139 S_CALL_SIGNAL_ERROR DTR 通道：帧同步正常但信号不完整 <br>
+	 *         140 S_CALL_FRAME_ERROR DTR 通道：帧同步不正常但信号完整 <br>
+	 *         150 S_CALL_VOIP_SESSION_PROCEEDING IP 通道：会话进行，该值为收到 183 时的状态 <br>
+	 *         151 S_CALL_VOIP_REG_ING IP 通道：SIP 通道注册中 <br>
+	 *         152 S_CALL_VOIP_REG_FAILED IP 通道：SIP 通道注册失败 <br>
+	 *         153 S_CALL_VOIP_CALL_ON_HOLD IP 通道：SIP 通道呼叫保持状态 <br>
+	 *         160 S_IP_MEDIA_LOCK MEDIA 媒体通道：媒体通道锁定状态 <br>
+	 *         161 S_IP_MEDIA_OPEN MEDIA 媒体通道：媒体通道打开状态 <br>
+	 *         162 S_SPY_RBSWAITACK RBS 监控通道：等待应答 <br>
+	 *         163 S_SPY_RBSSENDACK RBS 监控通道：发送应答 <br>
+	 *         170 S_IPR_USING IPR 系列产品通道：通道被占用状态 <br>
+	 *         171 S_IPR_COMMUNICATING IPR 系列产品通道：通道处于通讯中 <br>
+	 *         172 S_ISUP_WaitCOT ISUP 通道：等待 COT 消息 <br>
+	 *         300 S_FAX_EOR_ERR FAX 通道：ECM 模式下，传真多次重发后，进行否定处理 <br>
+	 *         301 S_FAX_RNR_RR FAX 通道：ECM 模式下，接收方忙 <br>
+	 *         302 S_FAX_RTN FAX 通道：传真接收，接收报文否定及重新训练 <br>
+	 *         303 S_FAX_NextPage_EOM FAX 通道：下页发送需要从 PhaseB 开始，重新训练 <br>
+	 *         400 S_FAX_V34_PhaseV8 FAX 通道：V.34 模式下，处在 V.8 训练阶段
+	 */
 	public int SsmGetChState(int ch);
 
 	public int SsmSetPlayDest(int ch, int nSelDest);
@@ -1651,7 +1901,8 @@ public interface SHP_A3 extends Library {
 	// //++End++added by cxq for Tcap 2005.04.28
 
 	// //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	// //@@@@@@@@@@@@@@@@@@@@@@@@@@ Query Format 鏌ヨ閫氶亾鏄惁鏀寔鎸囧畾鐨勫綍�?鹃煶鏍煎紡@@@@@@@
+	// //@@@@@@@@@@@@@@@@@@@@@@@@@@ Query Format
+	// 鏌ヨ閫氶亾鏄惁鏀寔鎸囧畾鐨勫綍�?鹃煶鏍煎紡@@@@@@@
 	// //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	// //---start--- added by cxq for query format,2005.05.17
 	// int WINAPI SsmQueryPlayFormat(int ch,int nFormat);;
@@ -1659,4 +1910,7 @@ public interface SHP_A3 extends Library {
 
 	// int WINAPI SsmQueryRecFormat(int ch, int nFormat);;
 	public int SsmQueryRecFormat(int ch, int nFormat);
+	// DTMF CallBack
+	// public int SsmSetRxDtmfHandler(int ch, RXDTMFHANDLER pfnOnRcvDtmf, PVOID
+	// pV)
 }

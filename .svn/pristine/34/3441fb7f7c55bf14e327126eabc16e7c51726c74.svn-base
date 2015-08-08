@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>侍卫长程序配置页面</title>
+</head>
+<body>
+	<div align="center">
+		<h3>基础程序配置pom.xml文件配置信息</h3>
+		<div align="left" style="border: 1px thin red;">
+			&lt;build&gt;<br />...<br />...<br />... <br /> &lt;plugins&gt;<br />
+			&lt;!--java runtime environment configuration (date:2015-04-16)
+			--&gt; <br />&lt;plugin&gt;<br />
+			&lt;artifactId&gt;maven-compiler-plugin&lt;&frasl;artifactId&gt;
+			&lt;version&gt;2.3.2&lt;&frasl;version&gt; &lt;configuration&gt;
+			&lt;source&gt;1.8&lt;&frasl;source&gt;
+			&lt;target&gt;1.8&lt;&frasl;target&gt;
+			&lt;encoding&gt;UTF-8&lt;&frasl;encoding&gt;
+			&lt;&frasl;configuration&gt;<br /> &lt;&frasl;plugin&gt;<br />
+			&lt;!-- 已完成的项目，提交到生产环境，部署使用maven提交到远程项目目录。 --&gt; <br />
+			&lt;plugin&gt;<br />
+			&lt;groupId&gt;org.apache.tomcat.maven&lt;&frasl;groupId&gt;
+			&lt;artifactId&gt;tomcat7-maven-plugin&lt;&frasl;artifactId&gt;
+			&lt;version&gt;2.1&lt;&frasl;version&gt;<br /> &lt;configuration&gt;
+			&lt;url&gt;http:&frasl;&frasl;localhost&frasl;manager&frasl;text&lt;&frasl;url&gt;
+			&lt;username&gt;swzxzAdmin&lt;&frasl;username&gt;
+			&lt;password&gt;GDswz@no1&lt;&frasl;password&gt;
+			&lt;server&gt;tomcat&lt;&frasl;server&gt; &lt;!--war文件路径缺省情况下指向target
+			--&gt;
+			&lt;path&gt;&frasl;${project.build.finalName}&lt;&frasl;path&gt;
+			&lt;warFile&gt;${basedir}&frasl;target&frasl;${project.build.finalName}.war&lt;&frasl;warFile&gt;<br />
+			&lt;&frasl;configuration&gt;<br /> &lt;executions&gt;
+			&lt;execution&gt;<br /> &lt;id&gt;tomcat-deploy&lt;&frasl;id&gt;
+			&lt;phase&gt;deploy&lt;&frasl;phase&gt;<br /> &lt;goals&gt;
+			&lt;goal&gt;<br />deploy<br />&lt;&frasl;goal&gt;
+			&lt;&frasl;goals&gt; <br /> &lt;&frasl;execution&gt;
+			&lt;&frasl;executions&gt;<br /> &lt;&frasl;plugin&gt;<br />
+			&lt;&frasl;plugins&gt; <br />&lt;&frasl;build&gt;
+		</div>
+	</div>
+</body>
+</html>
